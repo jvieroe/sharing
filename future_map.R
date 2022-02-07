@@ -52,3 +52,6 @@ output_list <- future_map(.x = df_list,
 output <- bind_rows(output_list, .id = "id")
 
 output
+
+
+# https://stackoverflow.com/questions/26919787/r-text-progress-bar-in-for-loop
