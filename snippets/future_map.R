@@ -5,24 +5,12 @@ library(gapminder)
 library(rnaturalearth)
 library(sf)
 
-map <- rnaturalearth::countries110 %>% 
-  st_as_sf() %>% 
-  select(sovereignt) %>% 
-  filter(sovereignt != "Antarctica")
-
+# ------ create dummy dataset
 df <- gapminder::gapminder
 
 table(df$year)
 
-map <- map %>% 
-  left_join(.,
-            df,
-            by = c("sovereignt" = "country"))
-
-map <- map %>% 
-  st_drop_geometry()
-
-map_list <- map %>% 
+map_list <- df %>% 
   split(., f = .$year)
 
 
