@@ -2,8 +2,6 @@ library(tidyverse)
 library(future)
 library(furrr)
 library(gapminder)
-library(rnaturalearth)
-library(sf)
 
 # ------ create dummy dataset
 df <- gapminder::gapminder
