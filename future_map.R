@@ -1,57 +1,54 @@
 library(tidyverse)
 library(future)
 library(furrr)
-library(svMisc)
+library(gapminder)
+library(rnaturalearth)
+library(sf)
 
-df <- mtcars
+map <- rnaturalearth::countries110 %>% 
+  st_as_sf() %>% 
+  select(sovereignt) %>% 
+  filter(sovereignt != "Antarctica")
 
-string_length <- length(LETTERS)
+df <- gapminder::gapminder
 
-df <- tibble(
-  mpg = rnorm(mean = 0, sd = 1, n = string_length*10^6),
-  group = factor(rep(LETTERS, 10^6))
-)
+table(df$year)
 
-nrow(df)
+map <- map %>% 
+  left_join(.,
+            df,
+            by = c("sovereignt" = "country"))
 
-letter_seq <- unique(df$group)
+map <- map %>% 
+  st_drop_geometry()
 
-for (i in seq_along(letter_seq)) {
+map_list <- map %>% 
+  split(., f = .$year)
+
+
+test_fun <- function(my_dat, output) {
   
-  progress(i)
-  
-  print(letter_seq[i])
-  
-}
-
-
-for (i in 0:131) {
-  progress(i, 131)
-  Sys.sleep(0.02)
-  if (i == 131) message("Done!")
-}
-
-
-df_list <- df %>% 
-  split(., f = .$group)
-
-test_fun <- function(data, output) {
-  
-  Sys.sleep(20)
-  
-  output <- mtcars %>% 
-    group_by(am) %>% 
-    summarise(mean_mpg = mean(mpg, na.rm = TRUE))
+  output <- my_dat %>% 
+    group_by(continent) %>% 
+    summarise(life_exp = mean(lifeExp, na.rm = TRUE))
   
 }
 
-output_list <- future_map(.x = df_list,
+no_cores <- availableCores() - 3
+no_cores
+
+
+future::plan(multisession, workers = no_cores)
+
+output_list <- future_map(.x = map_list,
                           .f = test_fun,
                           .progress = TRUE)
+
+future::plan(sequential)
+
 
 output <- bind_rows(output_list, .id = "id")
 
 output
 
 
-# https://stackoverflow.com/questions/26919787/r-text-progress-bar-in-for-loop
