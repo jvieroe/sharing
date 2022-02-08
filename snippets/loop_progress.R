@@ -18,6 +18,8 @@ unique_years
 # ----- define length of vector, "how many i's?"
 max_element <- length(unique_years) 
 
+
+# ----- run loop
 for (i in seq_along(unique_years)) {
   
   svMisc::progress(i, max_element)
